@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scholar Voices</title>
+<meta name="description" content="Anonymous stories from research scholars. Every post is reviewed before it appears.">
+<style>
+  :root {
+    --paper: #eef1f4;
+    --ink: #1f2a37;
+    --muted: #5d6b7a;
+    --line: #d3dae2;
+    --accent: #1f6f78;
+    --accent-ink: #ffffff;
+    --note: #f3e6c8;
+    --note-ink: #4a3a12;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #151b22;
+      --ink: #e6ebf0;
+      --muted: #9aa8b6;
+      --line: #2b3541;
+      --accent: #5cb4bd;
+      --accent-ink: #0e1a1c;
+      --note: #2c2616;
+      --note-ink: #eadcb8;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+  }
+  main { max-width: 640px; margin: 0 auto; padding: 40px 20px 56px; }
+  h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    font-size: clamp(32px, 8vw, 46px);
+    line-height: 1.15;
+    margin: 0 0 14px;
+  }
+  .lede { color: var(--muted); font-size: 17px; margin: 0 0 24px; max-width: 46ch; }
+  .share {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--accent-ink);
+    padding: 12px 22px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .share:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .rule {
+    background: var(--note);
+    color: var(--note-ink);
+    padding: 12px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+    margin: 28px 0 8px;
+  }
+  .post { padding: 26px 0; border-bottom: 1px solid var(--line); }
+  .post header { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; margin-bottom: 8px; }
+  .pen { font-weight: 600; }
+  .when { color: var(--muted); font-size: 13px; white-space: nowrap; }
+  .area { color: var(--muted); font-size: 13px; margin: -4px 0 8px; }
+  .msg {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 18px;
+    line-height: 1.75;
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .status { color: var(--muted); padding: 28px 0; }
+  footer { color: var(--muted); font-size: 14px; padding-top: 28px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>You are not the only one.</h1>
+  <p class="lede">Research scholars share what they cannot say out loud. Every story is reviewed before it appears, and only pen names are shown.</p>
+  <a class="share" href="https://docs.google.com/forms/d/e/1FAIpQLSehbmzRSz88tfhMHt8jlDLx2n-TKzHwj8l1L7BqXwyLxFppzg/viewform" target="_blank" rel="noopener noreferrer">Share your story</a>
+
+  <p class="rule">Please do not name real advisors, labs, or universities. Posts that do will be edited or not published.</p>
+
+  <section id="feed" aria-live="polite">
+    <p class="status">Loading stories…</p>
+  </section>
+
+  <footer>If you are in crisis, please reach out to a local helpline or someone you trust.</footer>
+</main>
+
+<script>
+  const FEED_URL = 'https://script.google.com/macros/s/AKfycbzquEG1eQ1E3nSpE5sV6eKKt61pP7R0wf2xvdFZtEP7bIj37Li2k8_cNG7Af-yDoLX_mg/exec';
+
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  function showStatus(text) {
+    const feed = document.getElementById('feed');
+    feed.replaceChildren(el('p', 'status', text));
+  }
+
+  async function load() {
+    try {
+      const res = await fetch(FEED_URL);
+      const posts = await res.json();
+      if (!Array.isArray(posts) || posts.length === 0) {
+        showStatus('No stories yet. Yours could be the first.');
+        return;
+      }
+      const feed = document.getElementById('feed');
+      feed.replaceChildren();
+      posts.forEach(function (p) {
+        const art = el('article', 'post');
+        const head = el('header');
+        head.appendChild(el('span', 'pen', p.pen || 'Anonymous'));
+        head.appendChild(el('span', 'when', p.date || ''));
+        art.appendChild(head);
+        if (p.area) art.appendChild(el('p', 'area', p.area));
+        art.appendChild(el('p', 'msg', p.msg || ''));
+        feed.appendChild(art);
+      });
+    } catch (e) {
+      showStatus('Could not load stories. Refresh the page in a moment.');
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>
